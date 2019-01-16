@@ -10,13 +10,13 @@ import (
 )
 
 func main() {
-	// Implement REST API
+	// TODO: Implement REST API
 
-	fmt.Println("Starting server:")
+	fmt.Println("Starting ganki server.")
 	r := mux.NewRouter()
 
 	r.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, %q\n", html.EscapeString(r.URL.Path))
+		fmt.Fprintf(w, "Request on route: %q\n", html.EscapeString(r.URL.Path))
 	})
 
 	// POST   /user/register
@@ -37,5 +37,4 @@ func main() {
 	err := http.ListenAndServe(":8080", nil)
 	fmt.Fprintln(os.Stderr, err)
 	os.Exit(1)
-
 }

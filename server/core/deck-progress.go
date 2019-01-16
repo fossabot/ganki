@@ -24,7 +24,7 @@ type CardProgress struct {
 }
 
 type StudySessionManager interface {
-	IncreaseDailyBalance(userID, deckID string, increase int) error
+	IncreaseDailyNewCards(userID, deckID string, increase int) error
 	UpdateCardsPerDay(userID, deckID string, cpd int) error
 
 	Study(userID, deckID string) Card
