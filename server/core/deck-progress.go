@@ -1,9 +1,5 @@
 package core
 
-import (
-	"time"
-)
-
 type DeckUserData struct {
 	UserID        string
 	DeckID        string
@@ -19,8 +15,6 @@ type DeckProgress struct {
 }
 
 type CardProgress struct {
-	DateDue            time.Time
-	RepetitionInterval time.Duration
 }
 
 type StudySessionManager interface {

@@ -2,22 +2,62 @@ package main
 
 import (
 	"fmt"
-	"html"
+	"github.com/wader/gormstore"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
+
+	"github.com/dulev/ganki/server/models"
+	"github.com/dulev/ganki/server/user"
 )
 
+type GankiServer struct {
+	userController user.UserController
+}
+
+func NewGankiServer(
+	userController user.UserController) *GankiServer {
+	return &GankiServer{
+		userController: userController,
+	}
+}
+
+
+
 func main() {
-	// TODO: Implement REST API
+	db, err := gorm.Open("sqlite3", "test.db")
+	if err != nil {
+		panic("failed to connect database")
+	}
+	defer db.Close()
 
-	fmt.Println("Starting ganki server.")
+	// initialize and setup cleanup
+	store := gormstore.New(db, []byte("secret"))
+	// db cleanup every hour
+	// close quit channel to stop cleanup
+	quit := make(chan struct{})
+	go store.PeriodicCleanup(1*time.Hour, quit)
+
+	// Migrations
+	db.AutoMigrate(models.User{})
+
+	// TODO: Create server
+	userController := user.NewUserController(db, user.NewUserService(db))
+
 	r := mux.NewRouter()
+	r.HandleFunc("/user/register", userController.Register)
+	r.HandleFunc("/user/login", userController.Login)
 
-	r.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Request on route: %q\n", html.EscapeString(r.URL.Path))
-	})
+	// Middleware
+	// r.Use(func(next http.Handler) http.Handler {
+	// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	//
+	// 	})
+	// })
 
 	// POST   /user/register
 	// POST   /user/login
@@ -34,7 +74,7 @@ func main() {
 	// POST   /deck/deck_id/study
 
 	http.Handle("/", r)
-	err := http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":8080", nil)
 	fmt.Fprintln(os.Stderr, err)
 	os.Exit(1)
 }

@@ -9,7 +9,6 @@ type Card struct {
 type CardFace struct {
 	PrimaryInfo   string
 	SecondaryInfo string
-	Image         string
 }
 
 type CardManager interface {
