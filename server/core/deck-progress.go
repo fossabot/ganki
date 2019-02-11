@@ -1,5 +1,7 @@
 package core
 
+import "github.com/dulev/ganki/server/models"
+
 type DeckUserData struct {
 	UserID        string
 	DeckID        string
@@ -17,10 +19,10 @@ type DeckProgress struct {
 type CardProgress struct {
 }
 
-type StudySessionManager interface {
+type StudySessionService interface {
 	IncreaseDailyNewCards(userID, deckID string, increase int) error
 	UpdateCardsPerDay(userID, deckID string, cpd int) error
 
-	Study(userID, deckID string) Card
+	Study(userID, deckID string) models.Card
 	SubmitStudyResults(userID, deckID string) error
 }

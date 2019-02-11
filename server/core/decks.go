@@ -1,15 +1,38 @@
 package core
 
-type Deck struct {
-	ID    string
-	Owner string
-	Name  string
-	Cards []Card
+import (
+	"github.com/dulev/ganki/server/models"
+	"github.com/jinzhu/gorm"
+)
+
+type DeckService interface {
+	List(username string) ([]models.Deck, error)
+	Create(username string, deck models.Deck) (string, error)
+	Share(username, deckID string) error
+	View(username, deckID string) (models.Deck, error)
 }
 
-type DeckManager interface {
-	List(userID string) ([]Deck, error)
-	Create(userID string, deck Deck) (string, error)
-	Share(userID, deckID string) error
-	View(userID, deckID string) (Deck, error)
+func NewDeckService(database *gorm.DB) DeckService {
+	return &DeckServiceImpl{}
+}
+
+type DeckServiceImpl struct {
+	database *gorm.DB
+}
+
+func (ds *DeckServiceImpl) List(username string) ([]models.Deck, error) {
+	var decks []models.Deck
+	ds.database.Where("username == ?", username).Find(&decks)
+}
+
+func (ds *DeckServiceImpl) Create(username string, deck models.Deck) (string, error) {
+	panic("implement me")
+}
+
+func (ds *DeckServiceImpl) Share(username, deckID string) error {
+	panic("implement me")
+}
+
+func (ds *DeckServiceImpl) View(username, deckID string) (models.Deck, error) {
+	panic("implement me")
 }

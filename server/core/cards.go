@@ -1,18 +1,9 @@
 package core
 
-type Card struct {
-	ID    string
-	Front CardFace
-	Back  CardFace
-}
+import "github.com/dulev/ganki/server/models"
 
-type CardFace struct {
-	PrimaryInfo   string
-	SecondaryInfo string
-}
-
-type CardManager interface {
-	AddCard(userID, deckID string, card Card) (string, error)
-	RemoveCard(userID, deckID string, cardID string) error
-	UpdateCard(userID, deckID string, card Card) error
+type CardService interface {
+	AddCard(username, deckID string, card models.Card) (string, error)
+	RemoveCard(username, deckID string, cardID string) error
+	UpdateCard(username, deckID string, card models.Card) error
 }
