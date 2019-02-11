@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"encoding/json"
+	"github.com/dulev/ganki/server/controllers/middleware"
+	"github.com/dulev/ganki/server/user"
 	"github.com/jinzhu/gorm"
 	"log"
 	"net/http"
@@ -12,18 +14,25 @@ import (
 // TODO: Implement route handlers
 
 type UserController struct {
-	database    *gorm.DB
-	userService UserService
+	database       *gorm.DB
+	sessionManager *middleware.SessionManager
+	userService    user.UserService
 }
 
-func NewUserController(database *gorm.DB, userService UserService) UserController {
+func NewUserController(
+	database *gorm.DB,
+	sessionManager *middleware.SessionManager,
+	userService user.UserService) UserController {
 	return UserController{
-		database:    database,
-		userService: userService,
+		database:       database,
+		sessionManager: sessionManager,
+		userService:    userService,
 	}
 }
 
 func (uc *UserController) Register(w http.ResponseWriter, r *http.Request) {
+	uc.sessionManager.ShouldBeLoggedOut(w, r)
+
 	decoder := json.NewDecoder(r.Body)
 
 	var userReg models.User
@@ -42,7 +51,7 @@ func (uc *UserController) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uc *UserController) Login(w http.ResponseWriter, r *http.Request) {
-	// TODO: NotLoggedInMiddleware
+	uc.sessionManager.ShouldBeLoggedOut(w, r)
 
 	decoder := json.NewDecoder(r.Body)
 
@@ -51,7 +60,7 @@ func (uc *UserController) Login(w http.ResponseWriter, r *http.Request) {
 		Password string
 	}
 
-	loginDetails := LoginDTO{}
+	var loginDetails LoginDTO
 	err := decoder.Decode(&loginDetails)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -61,4 +70,16 @@ func (uc *UserController) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 	}
+
+	uc.sessionManager.Login(loginDetails.Username, w, r)
+}
+
+func (uc *UserController) Logout(w http.ResponseWriter, r *http.Request) {
+	_, err := uc.sessionManager.ShouldBeLoggedIn(w, r)
+	if err != nil {
+		panic("TODO alabala")
+	}
+
+	// Session (Extract)
+	uc.sessionManager.Logout(w, r)
 }

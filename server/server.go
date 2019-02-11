@@ -2,65 +2,37 @@ package main
 
 import (
 	"fmt"
+	"github.com/dulev/ganki/server/common"
+	"github.com/dulev/ganki/server/controllers"
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/wader/gormstore"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
-
 	"github.com/dulev/ganki/server/models"
-	"github.com/dulev/ganki/server/user"
 )
 
 type GankiServer struct {
-	userController user.UserController
+	database       *gorm.DB
+	userController controllers.UserController
 }
 
-func NewGankiServer(
-	userController user.UserController) *GankiServer {
-	return &GankiServer{
-		userController: userController,
-	}
-}
-
-
-
-func main() {
-	db, err := gorm.Open("sqlite3", "test.db")
-	if err != nil {
-		panic("failed to connect database")
-	}
-	defer db.Close()
-
-	// initialize and setup cleanup
-	store := gormstore.New(db, []byte("secret"))
-	// db cleanup every hour
-	// close quit channel to stop cleanup
-	quit := make(chan struct{})
-	go store.PeriodicCleanup(1*time.Hour, quit)
+func (gs *GankiServer) Run() {
+	defer gs.database.Close()
 
 	// Migrations
-	db.AutoMigrate(models.User{})
+	gs.database.AutoMigrate(models.User{})
 
 	// TODO: Create server
-	userController := user.NewUserController(db, user.NewUserService(db))
-
 	r := mux.NewRouter()
-	r.HandleFunc("/user/register", userController.Register)
-	r.HandleFunc("/user/login", userController.Login)
+	r.HandleFunc("/user/register", gs.userController.Register).Methods("POST")
+	r.HandleFunc("/user/login", gs.userController.Login).Methods("POST")
+	r.HandleFunc("/user/logout", gs.userController.Logout).Methods("GET")
 
-	// Middleware
-	// r.Use(func(next http.Handler) http.Handler {
-	// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	//
-	// 	})
-	// })
-
-	// POST   /user/register
-	// POST   /user/login
+	r.HandleFunc("/deck", )
 	// POST   /deck
 	// GET    /deck
 	// PUT    /deck
@@ -74,7 +46,46 @@ func main() {
 	// POST   /deck/deck_id/study
 
 	http.Handle("/", r)
-	err = http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", nil)
 	fmt.Fprintln(os.Stderr, err)
 	os.Exit(1)
+}
+
+func main() {
+	gankiServer := InitializeServer()
+	gankiServer.Run()
+}
+
+func NewGankiServer(
+	database *gorm.DB,
+	gormstore *gormstore.Store,
+	userController controllers.UserController) *GankiServer {
+
+	return &GankiServer{
+		database:       database,
+		gormstore:      gormstore,
+		userController: userController,
+	}
+}
+
+func NewDatabase() *gorm.DB {
+	db, err := gorm.Open("sqlite3", "test.db")
+	if err != nil {
+		panic("failed to connect database")
+	}
+	// TODO: How to close
+	// defer db.Close()
+
+	return db
+}
+
+func NewGormstore(database *gorm.DB) *gormstore.Store {
+	// initialize and setup cleanup
+	store := gormstore.New(database, []byte("secret"))
+	// db cleanup every hour
+	// close quit channel to stop cleanup
+	quit := make(chan struct{})
+	go store.PeriodicCleanup(1*time.Hour, quit)
+
+	return store
 }
