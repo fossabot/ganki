@@ -72,14 +72,30 @@ func (uc *UserController) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	uc.sessionManager.Login(loginDetails.Username, w, r)
+
+	w.Write([]byte("Successfully logged in as " + loginDetails.Username))
 }
 
 func (uc *UserController) Logout(w http.ResponseWriter, r *http.Request) {
 	_, err := uc.sessionManager.ShouldBeLoggedIn(w, r)
 	if err != nil {
-		panic("TODO alabala")
+		// TODO: Log error
+		// panic("TODO" + err.Error())
+		w.WriteHeader(http.StatusUnauthorized)
 	}
 
 	// Session (Extract)
 	uc.sessionManager.Logout(w, r)
+}
+
+func (uc *UserController) ViewInfo(w http.ResponseWriter, r *http.Request) {
+	username, err := uc.sessionManager.ShouldBeLoggedIn(w, r)
+	if err != nil {
+		panic("TODO alabala")
+	}
+
+	userStruct := uc.userService.ViewUserInfo(username)
+
+	// TODO: Handle errors
+	json.NewEncoder(w).Encode(userStruct)
 }

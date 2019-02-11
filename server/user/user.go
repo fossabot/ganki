@@ -12,17 +12,18 @@ import (
 
 type UserService interface {
 	RegisterUser(user models.User) error
+	ViewUserInfo(username string) models.User
 	Authenticate(username, password string) error
 }
 
 func NewUserService(database *gorm.DB) UserService {
 	return &UserServiceImpl{
-		Database: database,
+		database: database,
 	}
 }
 
 type UserServiceImpl struct {
-	Database *gorm.DB
+	database *gorm.DB
 }
 
 // TODO: Maybe later add confirmation email.
@@ -36,16 +37,28 @@ func (us *UserServiceImpl) RegisterUser(user models.User) error {
 	}
 	user.Password = passwordHash
 
-	if err := us.Database.Create(&user).Error; err != nil {
+	if err := us.database.Create(&user).Error; err != nil {
 		fmt.Printf("Error writing to database: %v\n", err)
 	}
 
 	return nil
 }
 
+func (us *UserServiceImpl) ViewUserInfo(username string) models.User {
+	var user models.User
+	us.database.Where("username == ?", username).First(&user)
+	if us.database.Error != nil {
+		// TODO:
+	}
+
+	// user.Password = ""
+
+	return user
+}
+
 func (us *UserServiceImpl) Authenticate(username, password string) error {
 	var user models.User
-	if err := us.Database.Where("username = ?", username).First(&user).Error; err != nil {
+	if err := us.database.Where("username = ?", username).First(&user).Error; err != nil {
 		return errors.Wrap(err, "couldn't get user from database")
 	}
 

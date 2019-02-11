@@ -4,6 +4,7 @@ package main
 
 import (
 	"github.com/dulev/ganki/server/controllers"
+	"github.com/dulev/ganki/server/controllers/middleware"
 	"github.com/dulev/ganki/server/user"
 )
 import "github.com/google/wire"
@@ -11,8 +12,10 @@ import "github.com/google/wire"
 func InitializeServer() *GankiServer {
 	wire.Build(
 		NewGankiServer,
-		NewGormstore,
 		NewDatabase,
+
+		// Middleware
+		middleware.NewSessionManager,
 
 		// Controllers
 		controllers.NewUserController,

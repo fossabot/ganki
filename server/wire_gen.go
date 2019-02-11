@@ -7,6 +7,7 @@ package main
 
 import (
 	"github.com/dulev/ganki/server/controllers"
+	"github.com/dulev/ganki/server/controllers/middleware"
 	"github.com/dulev/ganki/server/user"
 )
 
@@ -18,9 +19,9 @@ import (
 
 func InitializeServer() *GankiServer {
 	db := NewDatabase()
-	store := NewGormstore(db)
+	sessionManager := middleware.NewSessionManager(db)
 	userService := user.NewUserService(db)
-	userController := controllers.NewUserController(db, store, userService)
-	gankiServer := NewGankiServer(db, store, userController)
+	userController := controllers.NewUserController(db, sessionManager, userService)
+	gankiServer := NewGankiServer(db, userController)
 	return gankiServer
 }

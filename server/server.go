@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/dulev/ganki/server/common"
 	"github.com/dulev/ganki/server/controllers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -31,8 +30,9 @@ func (gs *GankiServer) Run() {
 	r.HandleFunc("/user/register", gs.userController.Register).Methods("POST")
 	r.HandleFunc("/user/login", gs.userController.Login).Methods("POST")
 	r.HandleFunc("/user/logout", gs.userController.Logout).Methods("GET")
+	r.HandleFunc("/user", gs.userController.ViewInfo).Methods("GET")
 
-	r.HandleFunc("/deck", )
+	// r.HandleFunc("/deck", )
 	// POST   /deck
 	// GET    /deck
 	// PUT    /deck
@@ -58,12 +58,10 @@ func main() {
 
 func NewGankiServer(
 	database *gorm.DB,
-	gormstore *gormstore.Store,
 	userController controllers.UserController) *GankiServer {
 
 	return &GankiServer{
 		database:       database,
-		gormstore:      gormstore,
 		userController: userController,
 	}
 }
