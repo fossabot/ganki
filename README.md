@@ -1,4 +1,6 @@
 # ganki
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdulev%2Fganki.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdulev%2Fganki?ref=badge_shield)
+
 
 A go implementation of flashcard spaced repetition software. 
 A server and a client are provided that can work together as
@@ -31,3 +33,7 @@ To connect to a specific server. This can be done from the UI as well.
 ```
 $ ganki --server flashcards-hub.com
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdulev%2Fganki.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdulev%2Fganki?ref=badge_large)
